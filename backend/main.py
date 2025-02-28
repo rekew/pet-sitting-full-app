@@ -1,11 +1,10 @@
 from fastapi import FastAPI
+from routers import auth
 
 app = FastAPI()
 
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+
 @app.get("/")
 def read_root():
-    return {"message": "Hello, FastAPI!"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    return {"message": "Добро пожаловать в Nanny API!"}
