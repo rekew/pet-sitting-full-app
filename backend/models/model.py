@@ -12,7 +12,7 @@ class User(Base):
     name = Column(String)
     phone = Column(String, nullable=True)
 
-    #
+    
     nanny = relationship("Nanny", back_populates="user", uselist=False)
 
 class Nanny(Base):
@@ -23,6 +23,10 @@ class Nanny(Base):
     rating = Column(Float, default=0.0)
     location = Column(String, nullable=False)
     bio = Column(String, nullable=True)
+    offers_grooming=Column(Boolean,default=False)
 
     
     user = relationship("User", back_populates="nanny")
+
+
+
