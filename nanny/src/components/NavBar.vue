@@ -6,7 +6,10 @@
                 <h1>Nanny</h1>
             </div>
             <div class="second">
-                <img src="@/assets/user.svg" alt="Профиль" class="user-icon">
+                <router-link to="/register">
+                    <img src="@/assets/user.svg" alt="Профиль" class="user-icon">
+                </router-link>
+
                 <button class="burger" @click="toggleMenu">
                     ☰
                 </button>
