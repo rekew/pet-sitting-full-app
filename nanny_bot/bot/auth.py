@@ -1,35 +1,56 @@
-from telegram import Update,ReplyKeyboardRemove
-
+from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, filters, ContextTypes
+from data.database import verify_login, get_nanny
 
-LOGIN_USERNAME,LOGIN_PASSWORD=range(2)
+LOGIN_USERNAME, LOGIN_PASSWORD = range(2)
 
-async def login_start(update:Update,context:ContextTypes.DEFAULT_TYPE):
-     if "nanny_info" in context.user_data:
-        await update.message.reply_text("Введите ваш логин (например, ваше имя):")
-        return LOGIN_USERNAME
-     else:
-        await update.message.reply_text("Вы не зарегистрированы как няня. Зарегистрируйтесь через /become_nanny.")
-        return ConversationHandler.END
-
+async def login_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Введите ваше имя (как указано при регистрации):")
+    return LOGIN_USERNAME
 
 async def login_username(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['login_username'] = update.message.text
-    await update.message.reply_text("Введите пароль (в демо-версии используйте '1234'):")
+    await update.message.reply_text("Введите ваш пароль:")
     return LOGIN_PASSWORD
 
 async def login_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    username = context.user_data.get('login_username')
     password = update.message.text
-    if password == "1234":
-        await update.message.reply_text("Вы успешно вошли в систему!")
+    
+  
+    user_id = verify_login(username, password)
+    
+    if user_id:
+        nanny = get_nanny(user_id)
+        
+        if nanny:
+            context.user_data['logged_in'] = True
+            context.user_data['nanny_id'] = user_id
+            
+            await update.message.reply_text(
+                f"🎉 Вы успешно вошли в систему как {nanny['name']}!\n"
+                "Используйте /myinfo для просмотра своего профиля\n"
+                "Используйте /my_bookings для просмотра ваших заказов"
+            )
+        else:
+            await update.message.reply_text(
+                "Произошла ошибка при получении данных профиля."
+            )
     else:
-        await update.message.reply_text("Неверный пароль. Попробуйте снова или отмените командой /cancel.")
+        await update.message.reply_text(
+            "Неверное имя пользователя или пароль. Попробуйте снова!"
+        )
+        return LOGIN_USERNAME 
+    
     return ConversationHandler.END
-
 
 async def login_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Вход отменён.", reply_markup=ReplyKeyboardRemove())
+    await update.message.reply_text(
+        "Вход отменён.",
+        reply_markup=ReplyKeyboardRemove()
+    )
     return ConversationHandler.END
+
 
 login_conv = ConversationHandler(
     entry_points=[CommandHandler('login', login_start)],
@@ -39,3 +60,6 @@ login_conv = ConversationHandler(
     },
     fallbacks=[CommandHandler('cancel', login_cancel)]
 )
+
+
+
