@@ -280,3 +280,13 @@ def get_owner_bookings(owner_id, status=None):
     cur.close()
     conn.close()
     return result
+
+
+def delete_nanny(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM bookings WHERE nanny_id = %s", (user_id,))
+    cur.execute("DELETE FROM nannies WHERE user_id = %s", (user_id,))
+    conn.commit()
+    cur.close()
+    conn.close()

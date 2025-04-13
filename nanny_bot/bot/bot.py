@@ -1,9 +1,9 @@
 import logging
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler
 from telegram.request import HTTPXRequest
-from config import TELEGRAM_TOKEN
+from data.config import TELEGRAM_TOKEN
 from data.database import init_db
-from bot.commands import start, view_nannies, myinfo, nanny_details, my_bookings, help_command
+from bot.commands import start, view_nannies, myinfo, nanny_details, my_bookings, help_command,delete_my_nanny_profile
 from bot.conversation import nanny_registration_conv
 from bot.auth import login_conv
 from bot.booking import booking_conv
@@ -18,7 +18,6 @@ def main():
  
     init_db()
     
-
     request = HTTPXRequest(connect_timeout=30, read_timeout=30)
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).request(request).build()
     
@@ -28,6 +27,7 @@ def main():
     app.add_handler(CommandHandler("myinfo", myinfo))
     app.add_handler(CommandHandler("my_bookings", my_bookings))
     app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("delete_me", delete_my_nanny_profile))
     app.add_handler(nanny_registration_conv)
     app.add_handler(login_conv)
     app.add_handler(booking_conv)

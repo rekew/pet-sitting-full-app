@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
 from data.database import add_user, get_all_nannies, get_nanny, get_owner_bookings, get_nanny_bookings
-
+from data.database import delete_nanny
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     add_user(user.id, user.username or user.first_name)
@@ -15,7 +15,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         " /myinfo - Просмотр информации о себе\n"
         " /my_bookings - Мои заказы\n"
         " /search - Поиск нянь по параметрам\n"
-        " /help - Помощь по работе с ботом"
+        " /help - Помощь по работе с ботом\n"
+        " /delete_me - Удалить профиль нянь\n"
     )
     await update.message.reply_text(text)
 
@@ -172,6 +173,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "3. Используйте /myinfo для просмотра и редактирования профиля\n"
         "4. Используйте /my_bookings для просмотра ваших заказов\n"
         "5. Нажмите 'Изменить статус' чтобы сделать себя доступным/недоступным\n\n"
+        "6. Используйте /delete_me для удаления профиля\n\n"
         
         "Общие команды:\n"
         "- /start - Начать работу с ботом\n"
@@ -179,3 +181,13 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "- /help - Показать это сообщение"
     )
     await update.message.reply_text(text)
+
+async def delete_my_nanny_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        user_id = update.effective_user.id
+        if get_nanny(user_id):
+            delete_nanny(user_id)
+            await update.message.reply_text("Ваш профиль няни удалён. Вы всегда можете зарегистрироваться заново через /become_nanny.")
+        else:
+            await update.message.reply_text("У вас нет профиля няни.")
+
+

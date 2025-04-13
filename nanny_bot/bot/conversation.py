@@ -2,6 +2,7 @@ from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, filters, ContextTypes
 from data.database import add_nanny, add_user
 import re
+from data.database import get_nanny  
 (
     BECOME_NANNY_NAME,
     BECOME_NANNY_CITY,
@@ -14,10 +15,16 @@ import re
 
 async def nanny_registration_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    add_user(user.id, user.username or user.first_name)
-    
+    user_id = user.id
+    user_username = user.username
+
+    if get_nanny(user_id):
+        await update.message.reply_text("Вы уже зарегистрированы как няня. Используйте /myinfo.")
+        return ConversationHandler.END
+
+    add_user(user_id, user_username or user.first_name)
     await update.message.reply_text(
-        " Регистрация няни для питомцев \n\n"
+        "Регистрация няни для питомцев \n\n"
         "Введите ваше имя и фамилию:"
     )
     return BECOME_NANNY_NAME

@@ -1,14 +1,12 @@
-# bot/booking.py
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from data.database import get_nanny, add_booking, update_booking_status
 import datetime
 
-# Состояния для бронирования
 BOOKING_DATE, BOOKING_TIME, BOOKING_DURATION, BOOKING_PET_DETAILS, BOOKING_ADDRESS, BOOKING_CONFIRM = range(6)
 
 async def start_booking(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Начало процесса бронирования"""
+ 
     query = update.callback_query
     await query.answer()
     
@@ -19,11 +17,10 @@ async def start_booking(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("Информация о няне не найдена.")
         return ConversationHandler.END
     
-    # Сохраняем ID няни в контексте
-    context.user_data['booking_nanny_id'] = nanny_id
+   
     context.user_data['booking_nanny_name'] = nanny['name']
     
-    # Показываем календарь для выбора даты или предлагаем ввести дату
+ 
     await query.edit_message_text(
         f"Вы бронируете {nanny['name']} из {nanny['city']}.\n\n"
         f"Введите дату в формате ДД.ММ.ГГГГ (например, 15.04.2025):"
@@ -34,18 +31,18 @@ async def booking_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка выбранной даты"""
     date_text = update.message.text
     
-    # Проверяем формат даты
+   
     try:
         booking_date = datetime.datetime.strptime(date_text, "%d.%m.%Y").date()
         
-        # Проверяем, что дата не в прошлом
+      
         if booking_date < datetime.datetime.now().date():
             await update.message.reply_text(
                 "Выбранная дата уже прошла. Пожалуйста, выберите будущую дату:"
             )
             return BOOKING_DATE
         
-        # Сохраняем дату в контексте
+       
         context.user_data['booking_date'] = booking_date
         
         await update.message.reply_text(
@@ -63,25 +60,25 @@ async def booking_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка выбранного времени"""
     time_text = update.message.text
     
-    # Проверяем формат времени
+
     try:
         time_obj = datetime.datetime.strptime(time_text, "%H:%M").time()
         booking_date = context.user_data['booking_date']
         
-        # Создаем полную дату и время начала
+   
         start_datetime = datetime.datetime.combine(booking_date, time_obj)
         
-        # Проверяем, что время не в прошлом
+    
         if start_datetime < datetime.datetime.now():
             await update.message.reply_text(
                 "Выбранное время уже прошло. Пожалуйста, выберите будущее время:"
             )
             return BOOKING_TIME
         
-        # Сохраняем время начала в контексте
+        
         context.user_data['booking_start_time'] = start_datetime
         
-        # Предлагаем выбор длительности с помощью клавиатуры
+      
         keyboard = [
             ['1 час', '2 часа', '3 часа'],
             ['4 часа', '6 часов', '8 часов'],
@@ -104,7 +101,7 @@ async def booking_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка выбранной продолжительности"""
     duration_text = update.message.text
     
-    # Обрабатываем выбор продолжительности
+ 
     if duration_text == 'Другое':
         await update.message.reply_text(
             "Введите количество часов (например, 5):",
@@ -112,7 +109,7 @@ async def booking_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return BOOKING_DURATION
     
-    # Извлекаем количество часов из выбора
+    
     try:
         if 'час' in duration_text:
             hours = int(duration_text.split()[0])
@@ -125,15 +122,15 @@ async def booking_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return BOOKING_DURATION
         
-        # Вычисляем время окончания
+        
         start_time = context.user_data['booking_start_time']
         end_time = start_time + datetime.timedelta(hours=hours)
         
-        # Сохраняем время окончания в контексте
+      
         context.user_data['booking_end_time'] = end_time
         context.user_data['booking_duration'] = hours
         
-        # Переходим к деталям о питомце
+       
         await update.message.reply_text(
             "Опишите вашего питомца (вид, порода, возраст, особенности):",
             reply_markup=ReplyKeyboardRemove()
@@ -150,17 +147,17 @@ async def booking_pet_details(update: Update, context: ContextTypes.DEFAULT_TYPE
     """Обработка информации о питомце"""
     pet_details = update.message.text
     
-    # Проверяем длину описания
+   
     if len(pet_details) < 5:
         await update.message.reply_text(
             "Пожалуйста, предоставьте более подробное описание вашего питомца:"
         )
         return BOOKING_PET_DETAILS
     
-    # Сохраняем информацию о питомце
+ 
     context.user_data['booking_pet_details'] = pet_details
     
-    # Запрашиваем адрес
+   
     await update.message.reply_text(
         "Введите адрес, куда няня должна прибыть:"
     )
@@ -170,24 +167,24 @@ async def booking_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка адреса"""
     address = update.message.text
     
-    # Проверяем длину адреса
+  
     if len(address) < 5:
         await update.message.reply_text(
             "Пожалуйста, введите полный адрес:"
         )
         return BOOKING_ADDRESS
     
-    # Сохраняем адрес
+  
     context.user_data['booking_address'] = address
     
-    # Показываем сводку заказа для подтверждения
+ 
     nanny_name = context.user_data['booking_nanny_name']
     start_time = context.user_data['booking_start_time'].strftime("%d.%m.%Y %H:%M")
     end_time = context.user_data['booking_end_time'].strftime("%d.%m.%Y %H:%M")
     duration = context.user_data['booking_duration']
     pet_details = context.user_data['booking_pet_details']
     
-    # Получаем информацию о няне для расчета стоимости
+    
     nanny_id = context.user_data['booking_nanny_id']
     nanny = get_nanny(nanny_id)
     hourly_rate = nanny['hourly_rate']
@@ -205,7 +202,7 @@ async def booking_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Подтвердите заказ:"
     )
     
-    # Создаем кнопки для подтверждения или отмены
+   
     keyboard = [
         [InlineKeyboardButton("✅ Подтвердить", callback_data="booking_confirm")],
         [InlineKeyboardButton("❌ Отменить", callback_data="booking_cancel")]
@@ -221,7 +218,7 @@ async def booking_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     
     if query.data == "booking_confirm":
-        # Добавляем заказ в базу данных
+   
         owner_id = update.effective_user.id
         nanny_id = context.user_data['booking_nanny_id']
         start_time = context.user_data['booking_start_time']
@@ -241,7 +238,7 @@ async def booking_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Заказ отменен."
         )
     
-    # Очищаем данные бронирования из контекста
+   
     for key in list(context.user_data.keys()):
         if key.startswith('booking_'):
             del context.user_data[key]
@@ -255,14 +252,14 @@ async def booking_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=ReplyKeyboardRemove()
     )
     
-    # Очищаем данные бронирования из контекста
+   
     for key in list(context.user_data.keys()):
         if key.startswith('booking_'):
             del context.user_data[key]
     
     return ConversationHandler.END
 
-# Создаем обработчик для бронирования
+
 booking_conv = ConversationHandler(
     entry_points=[CallbackQueryHandler(start_booking, pattern=r'^book_\d+$')],
     states={
