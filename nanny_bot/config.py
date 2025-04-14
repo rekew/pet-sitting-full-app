@@ -1,3 +1,7 @@
-TELEGRAM_TOKEN="7399258073:AAGXmiRaBphXXlyHeM_2XAUpY09fJbyCBls"
+from dotenv import load_dotenv
+import os 
 
-DB_URI = "postgresql://postgres:Bekzat070@localhost:5432/pet_nanny_bot"
+load_dotenv()
+
+TELEGRAM_TOKEN=os.getenv("TELEGRAM_TOKEN")
+DB_URI=os.getenv("DB_URI")

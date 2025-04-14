@@ -28,10 +28,7 @@ async def start_booking(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return BOOKING_DATE
 
 async def booking_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка выбранной даты"""
     date_text = update.message.text
-    
-   
     try:
         booking_date = datetime.datetime.strptime(date_text, "%d.%m.%Y").date()
         
@@ -57,48 +54,38 @@ async def booking_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return BOOKING_DATE
 
 async def booking_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка выбранного времени"""
     time_text = update.message.text
-    
-
     try:
         time_obj = datetime.datetime.strptime(time_text, "%H:%M").time()
         booking_date = context.user_data['booking_date']
-        
-   
         start_datetime = datetime.datetime.combine(booking_date, time_obj)
-        
-    
         if start_datetime < datetime.datetime.now():
             await update.message.reply_text(
                 "Выбранное время уже прошло. Пожалуйста, выберите будущее время:"
             )
             return BOOKING_TIME
-        
-        
+    
         context.user_data['booking_start_time'] = start_datetime
         
-      
         keyboard = [
             ['1 час', '2 часа', '3 часа'],
             ['4 часа', '6 часов', '8 часов'],
             ['Другое']
         ]
-        
+       
         await update.message.reply_text(
             "Выберите продолжительность услуги:",
             reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
         )
         return BOOKING_DURATION
-        
+      
     except ValueError:
         await update.message.reply_text(
             "Неверный формат времени. Пожалуйста, используйте формат ЧЧ:ММ (например, 14:30):"
         )
         return BOOKING_TIME
-
+        
 async def booking_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка выбранной продолжительности"""
     duration_text = update.message.text
     
  
@@ -144,7 +131,7 @@ async def booking_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return BOOKING_DURATION
 
 async def booking_pet_details(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка информации о питомце"""
+   
     pet_details = update.message.text
     
    
@@ -213,7 +200,6 @@ async def booking_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return BOOKING_CONFIRM
 
 async def booking_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка подтверждения заказа"""
     query = update.callback_query
     await query.answer()
     
