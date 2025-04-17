@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .. import models, schemas, dependencies
+from .. import models, schemas, dependecies
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 
 @router.post("", response_model=schemas.BookingOut, status_code=status.HTTP_201_CREATED)
-async def create_booking(payload: schemas.BookingCreate, session: AsyncSession = Depends(dependencies.get_session)):
+async def create_booking(payload: schemas.BookingCreate, session: AsyncSession = Depends(dependecies.get_session)):
     owner = await session.get(models.User, payload.owner_id)
     sitter = await session.get(models.Sitter, payload.sitter_id)
     pet = await session.get(models.Pet, payload.pet_id)
@@ -19,7 +19,7 @@ async def create_booking(payload: schemas.BookingCreate, session: AsyncSession =
     return booking
 
 @router.get("/{booking_id}", response_model=schemas.BookingOut)
-async def get_booking(booking_id: int, session: AsyncSession = Depends(dependencies.get_session)):
+async def get_booking(booking_id: int, session: AsyncSession = Depends(dependecies.get_session)):
     booking = await session.get(models.Booking, booking_id)
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")

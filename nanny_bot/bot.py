@@ -9,7 +9,7 @@ from telegram.ext import (
 )
 
 
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "PASTE_YOUR_TOKEN_HERE")
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7399258073:AAGXmiRaBphXXlyHeM_2XAUpY09fJbyCBls")
 API_URL   = os.getenv("BACKEND_API_URL",   "http://localhost:8000")
 # --------------------------------------------------------------------------
 
