@@ -89,7 +89,10 @@ async def search_pet_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def search_min_rating(update: Update, context: ContextTypes.DEFAULT_TYPE):
     choice = update.message.text
     if "Любой" not in choice:
-        context.user_data["search_params"]["min_rating"] = float(choice[-2])  # 5,4,3,2
+        import re
+        match = re.search(r"\d+", choice)
+        if match:
+            context.user_data["search_params"]["min_rating"] = float(match.group())
 
     params = context.user_data["search_params"]
     nannies = get_all_nannies(
@@ -107,6 +110,7 @@ async def search_min_rating(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["search_page"] = 0
     await _show_results(update, context, first=True)
     return SHOW_RESULTS
+
 
 async def _show_results(update: Update, context: ContextTypes.DEFAULT_TYPE, *, first=False):
     nannies: list = context.user_data["search_results"]

@@ -231,3 +231,23 @@ def delete_nanny(user_id: int):
     with get_cursor() as cur:
         cur.execute("DELETE FROM bookings WHERE nanny_id = %s", (user_id,))
         cur.execute("DELETE FROM nannies  WHERE user_id  = %s", (user_id,))
+
+def update_user_type(user_id: int, user_type: str):
+    """Update user type in the database (owner or nanny)"""
+    with get_cursor() as cur:
+        cur.execute("""
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'users' AND column_name = 'user_type'
+            ) THEN
+                ALTER TABLE users ADD COLUMN user_type VARCHAR(20) DEFAULT 'owner';
+            END IF;
+        END$$;
+        """)
+        
+        cur.execute(
+            "UPDATE users SET user_type = %s WHERE user_id = %s",
+            (user_type, user_id)
+        )
